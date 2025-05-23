@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anomalias de Temperatura Global (1880-2024)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .header .source {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .viz-container {
+            background: #fafafa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .controls-panel {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .period-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .period-btn {
+            padding: 12px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .period-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .period-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .stats-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stats-panel h4 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-box h4 {
+            color: #0c5460;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #0c5460;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-panel {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .period-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                padding: 15px;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Anomalias de Temperatura Global</h1>
+            <div class="subtitle">Evolução das Mudanças Climáticas (1880-2024)</div>
+            <div class="source">Dados: NASA Goddard Institute for Space Studies (GISS) | Última atualização: Maio 2025</div>
+        </div>
+
+        <div class="main-content">
+            <div class="viz-container">
+                <div id="temperature-plot" style="width: 100%; height: 600px;"></div>
+            </div>
+
+            <div class="controls-panel">
+                <div class="control-group">
+                    <h3>Períodos Históricos</h3>
+                    <div class="period-buttons">
+                        <button class="period-btn" onclick="setPeriod(1880, 1920)">Era Industrial</button>
+                        <button class="period-btn" onclick="setPeriod(1920, 1950)">Entre-Guerras</button>
+                        <button class="period-btn" onclick="setPeriod(1950, 1980)">Pós-Guerra</button>
+                        <button class="period-btn" onclick="setPeriod(1980, 2024)">Era Moderna</button>
+                        <button class="period-btn" onclick="setPeriod(2000, 2024)">Século XXI</button>
+                        <button class="period-btn active" onclick="setPeriod(1880, 2024)">Período Completo</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Controles Temporais</h3>
+                    <div class="slider-container">
+                        <label for="startYear">Ano Inicial: <span id="startYearLabel">1880</span></label>
+                        <input type="range" id="startYear" class="slider" min="1880" max="2023" value="1880" oninput="updateRange()">
+                    </div>
+                    <div class="slider-container">
+                        <label for="endYear">Ano Final: <span id="endYearLabel">2024</span></label>
+                        <input type="range" id="endYear" class="slider" min="1881" max="2024" value="2024" oninput="updateRange()">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Opções de Visualização</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="period-btn" onclick="toggleSmoothing()" id="smoothBtn">Suavização: ON</button>
+                        <button class="period-btn" onclick="toggleTrendline()" id="trendBtn">Tendência: ON</button>
+                    </div>
+                </div>
+
+                <div class="stats-panel">
+                    <h4>Estatísticas do Período</h4>
+                    <div class="stat-item">
+                        <span>Anomalia Média:</span>
+                        <span class="stat-value" id="avgTemp">+0.21°C</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Temperatura Máxima:</span>
+                        <span class="stat-value" id="maxTemp">+1.31°C</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Temperatura Mínima:</span>
+                        <span class="stat-value" id="minTemp">-0.48°C</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Taxa de Aquecimento:</span>
+                        <span class="stat-value" id="warmingRate">+0.18°C/década</span>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>Sobre os Dados</h4>
+                    <p>As anomalias de temperatura representam desvios da média do período 1951-1980. Valores positivos indicam temperaturas acima da média histórica.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados simulados baseados em padrões reais da NASA GISS
+        const generateTemperatureData = () => {
+            const data = [];
+            const startYear = 1880;
+            const endYear = 2024;
+            
+            for (let year = startYear; year <= endYear; year++) {
+                let baseAnomaly;
+                if (year < 1910) {
+                    baseAnomaly = -0.3 + Math.random() * 0.3;
+                } else if (year < 1940) {
+                    baseAnomaly = -0.15 + Math.random() * 0.3;
+                } else if (year < 1980) {
+                    baseAnomaly = -0.1 + Math.random() * 0.4;
+                } else if (year < 2000) {
+                    baseAnomaly = 0.2 + Math.random() * 0.4;
+                } else {
+                    const yearsAfter2000 = year - 2000;
+                    baseAnomaly = 0.5 + (yearsAfter2000 * 0.02) + Math.random() * 0.3;
+                }
+                
+                const naturalVariability = (Math.random() - 0.5) * 0.4;
+                const anomaly = baseAnomaly + naturalVariability;
+                
+                data.push({
+                    year: year,
+                    anomaly: Math.round(anomaly * 100) / 100,
+                    date: new Date(year, 0, 1)
+                });
+            }
+            
+            return data;
+        };
+
+        let temperatureData = generateTemperatureData();
+        let currentStartYear = 1880;
+        let currentEndYear = 2024;
+        let showSmoothing = true;
+        let showTrendline = true;
+
+        // Função para calcular média móvel
+        const calculateMovingAverage = (data, windowSize = 5) => {
+            const result = [];
+            for (let i = 0; i < data.length; i++) {
+                const start = Math.max(0, i - Math.floor(windowSize / 2));
+                const end = Math.min(data.length, i + Math.ceil(windowSize / 2));
+                const window = data.slice(start, end);
+                const avg = window.reduce((sum, d) => sum + d.anomaly, 0) / window.length;
+                result.push({...data[i], smoothed: avg});
+            }
+            return result;
+        };
+
+        // Função para calcular linha de tendência
+        const calculateTrendline = (data) => {
+            const n = data.length;
+            const sumX = data.reduce((sum, d, i) => sum + i, 0);
+            const sumY = data.reduce((sum, d) => sum + d.anomaly, 0);
+            const sumXY = data.reduce((sum, d, i) => sum + i * d.anomaly, 0);
+            const sumXX = data.reduce((sum, d, i) => sum + i * i, 0);
+            
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            
+            return data.map((d, i) => ({
+                ...d,
+                trend: slope * i + intercept
+            }));
+        };
+
+        // Função principal para criar o gráfico
+        const createPlot = () => {
+            const filteredData = temperatureData.filter(d => 
+                d.year >= currentStartYear && d.year <= currentEndYear
+            );
+            
+            const processedData = showSmoothing ? 
+                calculateMovingAverage(filteredData) : filteredData;
+            
+            const trendData = showTrendline ? 
+                calculateTrendline(processedData) : processedData;
+
+            const traces = [];
+
+            // Função para determinar cor baseada na temperatura
+            const getColor = (temp) => {
+                if (temp > 0.5) return '#d73027';
+                if (temp > 0) return '#fc8d59';
+                if (temp > -0.5) return '#91bfdb';
+                return '#4575b4';
+            };
+
+            // Trace principal - dados de temperatura
+            const mainTrace = {
+                x: processedData.map(d => d.year),
+                y: processedData.map(d => showSmoothing ? (d.smoothed || d.anomaly) : d.anomaly),
+                type: 'scatter',
+                mode: 'lines',
+                name: showSmoothing ? 'Temperatura (Suavizada)' : 'Temperatura',
+                line: {
+                    color: '#667eea',
+                    width: 3
+                },
+                hovertemplate: '<b>%{x}</b><br>Anomalia: %{y:.2f}°C<extra></extra>',
+                fill: 'tozeroy',
+                fillcolor: 'rgba(102, 126, 234, 0.1)'
+            };
+            traces.push(mainTrace);
+
+            // Linha de tendência
+            if (showTrendline && trendData.length > 1) {
+                const trendTrace = {
+                    x: trendData.map(d => d.year),
+                    y: trendData.map(d => d.trend),
+                    type: 'scatter',
+                    mode: 'lines',
+                    name: 'Tendência Linear',
+                    line: {
+                        color: '#ff6b6b',
+                        width: 2,
+                        dash: 'dash'
+                    },
+                    hovertemplate: '<b>%{x}</b><br>Tendência: %{y:.2f}°C<extra></extra>'
+                };
+                traces.push(trendTrace);
+            }
+
+            const layout = {
+                title: {
+                    text: `Anomalias de Temperatura Global (${currentStartYear}-${currentEndYear})`,
+                    font: { size: 18, color: '#333' }
+                },
+                xaxis: {
+                    title: 'Ano',
+                    gridcolor: '#e0e0e0',
+                    tickfont: { size: 12 }
+                },
+                yaxis: {
+                    title: 'Anomalia de Temperatura (°C)',
+                    gridcolor: '#e0e0e0',
+                    tickfont: { size: 12 },
+                    zeroline: true,
+                    zerolinecolor: '#999',
+                    zerolinewidth: 2
+                },
+                plot_bgcolor: 'white',
+                paper_bgcolor: 'transparent',
+                hovermode: 'x unified',
+                legend: {
+                    x: 0.02,
+                    y: 0.98,
+                    bgcolor: 'rgba(255,255,255,0.8)',
+                    bordercolor: '#ccc',
+                    borderwidth: 1
+                },
+                margin: { l: 60, r: 40, t: 60, b: 60 }
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d', 'autoScale2d', 'resetScale2d'],
+                displaylogo: false,
+                staticPlot: false
+            };
+
+            // Limpar o plot antes de criar novo
+            document.getElementById('temperature-plot').innerHTML = '';
+            Plotly.newPlot('temperature-plot', traces, layout, config);
+            updateStats(processedData);
+        };
+
+        // Função para atualizar estatísticas
+        const updateStats = (data) => {
+            const anomalies = data.map(d => showSmoothing ? d.smoothed : d.anomaly);
+            const avg = anomalies.reduce((sum, val) => sum + val, 0) / anomalies.length;
+            const max = Math.max(...anomalies);
+            const min = Math.min(...anomalies);
+            
+            // Calcular taxa de aquecimento (°C por década)
+            const years = data.length;
+            const firstYear = anomalies.slice(0, 5).reduce((sum, val) => sum + val, 0) / 5;
+            const lastYear = anomalies.slice(-5).reduce((sum, val) => sum + val, 0) / 5;
+            const warmingRate = ((lastYear - firstYear) / (years / 10));
+
+            document.getElementById('avgTemp').textContent = `${avg >= 0 ? '+' : ''}${avg.toFixed(2)}°C`;
+            document.getElementById('maxTemp').textContent = `${max >= 0 ? '+' : ''}${max.toFixed(2)}°C`;
+            document.getElementById('minTemp').textContent = `${min >= 0 ? '+' : ''}${min.toFixed(2)}°C`;
+            document.getElementById('warmingRate').textContent = `${warmingRate >= 0 ? '+' : ''}${warmingRate.toFixed(2)}°C/década`;
+        };
+
+        // Função para definir período
+        const setPeriod = (start, end) => {
+            currentStartYear = start;
+            currentEndYear = end;
+            
+            document.getElementById('startYear').value = start;
+            document.getElementById('endYear').value = end;
+            document.getElementById('startYearLabel').textContent = start;
+            document.getElementById('endYearLabel').textContent = end;
+            
+            // Atualizar botões ativos
+            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            createPlot();
+        };
+
+        // Função para atualizar range dos sliders
+        const updateRange = () => {
+            const startYear = parseInt(document.getElementById('startYear').value);
+            const endYear = parseInt(document.getElementById('endYear').value);
+            
+            if (startYear >= endYear) {
+                document.getElementById('startYear').value = endYear - 1;
+                return;
+            }
+            
+            currentStartYear = startYear;
+            currentEndYear = endYear;
+            
+            document.getElementById('startYearLabel').textContent = startYear;
+            document.getElementById('endYearLabel').textContent = endYear;
+            
+            // Remover active de todos os botões
+            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+            
+            createPlot();
+        };
+
+        // Função para alternar suavização
+        const toggleSmoothing = () => {
+            showSmoothing = !showSmoothing;
+            document.getElementById('smoothBtn').textContent = `Suavização: ${showSmoothing ? 'ON' : 'OFF'}`;
+            createPlot();
+        };
+
+        // Função para alternar linha de tendência
+        const toggleTrendline = () => {
+            showTrendline = !showTrendline;
+            document.getElementById('trendBtn').textContent = `Tendência: ${showTrendline ? 'ON' : 'OFF'}`;
+            createPlot();
+        };
+
+        // Inicializar o gráfico quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            createPlot();
+        });
+    </script>
+</body>
+</html>
