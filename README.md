@@ -1,5 +1,8 @@
 # 🌡️ Assignment 2 - Visualização Interativa de Anomalias de Temperatura Global
 
+![image](https://github.com/user-attachments/assets/1f95d5f7-d8a5-4549-84f2-4b3b975679ba)
+
+
 ## 📋 Visão Geral
 
 Este projeto é uma visualização interativa desenvolvida para o Assignment 2, focando na análise e apresentação das anomalias de temperatura média global de 1880 a 2024. Utiliza dados baseados no dataset NASA GISS GISTEMP v4 para criar uma experiência educativa e interativa sobre mudanças climáticas.
