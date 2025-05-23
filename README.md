@@ -15,7 +15,8 @@ Este projeto é uma visualização interativa desenvolvida para o Assignment 2, 
 ### 📁 Estrutura do Projeto
   ```csharp
             assignment2/
-            ├── 📄 README.md                                    
+            ├── 📄 assignment2
+            ├── 📄 README.md                                
             ├── 🌐 interactive_climate_viz.html
             ├── 🎨 design_iterations.html                                
   ```    
